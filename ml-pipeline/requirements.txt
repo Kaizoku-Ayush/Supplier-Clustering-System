@@ -6,6 +6,7 @@ faker>=19.6.2
 # Machine Learning
 scikit-learn>=1.4.0
 scipy>=1.12.0
+tensorflow>=2.15.0  # For autoencoder
 
 # Visualization
 matplotlib>=3.8.0
