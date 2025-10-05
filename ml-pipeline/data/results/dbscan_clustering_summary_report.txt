@@ -1,0 +1,78 @@
+
+DBSCAN SUPPLIER CLUSTERING ANALYSIS REPORT
+
+Generated: 2025-10-05 18:49:30
+
+
+DATASET OVERVIEW:
+
+- Total Suppliers: 2994
+- Unique Suppliers: 25
+- Date Range: 2015-01-01 to 2024-12-01
+- Number of Clusters Found: 19
+- Number of Noise Points: 1184 (39.5%)
+
+
+CLUSTER DISTRIBUTION:
+
+cluster_name
+Noise         1184
+Cluster_5      213
+Cluster_17     196
+Cluster_16     160
+Cluster_15     134
+Cluster_9      112
+Cluster_1      111
+Cluster_11     109
+Cluster_13     106
+Cluster_14     102
+Cluster_12      96
+Cluster_4       87
+Cluster_7       86
+Cluster_6       84
+Cluster_18      72
+Cluster_2       64
+Cluster_3       20
+Cluster_19      20
+Cluster_10      19
+Cluster_8       19
+
+
+CLUSTER PERFORMANCE SUMMARY:
+
+            delivery_reliability  cost_efficiency  defect_rate  quality_score  on_time_delivery_rate  response_time_hours  customer_satisfaction  overall_score  supplier_count
+Cluster_1                  66.75            65.15         1.73          73.72                  67.10                16.93                   7.19          71.92             111
+Cluster_10                 74.51            71.20         1.78          40.00                  74.11                13.84                   6.15          65.46              19
+Cluster_11                 44.30            83.68         1.72          49.45                  44.35                18.79                   5.89          62.69             109
+Cluster_12                 48.53            60.73         1.81          89.62                  48.87                18.26                   7.11          70.23              96
+Cluster_13                 60.51            70.83         1.83          81.68                  60.99                17.05                   7.44          73.54             106
+Cluster_14                 56.30            83.36         1.74          61.25                  56.73                34.54                   6.84          69.42             102
+Cluster_15                 72.43            76.25         1.80          84.78                  71.95                22.28                   7.93          78.94             134
+Cluster_16                 62.81            80.44         1.74          45.86                  62.32                19.16                   6.28          66.10             160
+Cluster_17                 62.27            39.56         1.73          92.54                  62.12                20.54                   7.33          70.51             196
+Cluster_18                 74.85            58.79         1.67          40.57                  74.88                22.55                   6.14          63.44              72
+Cluster_19                 91.29            59.95         4.65          50.27                  91.95                18.71                   6.05          64.13              20
+Cluster_2                  39.90            35.61         5.42          54.73                  40.05                20.19                   4.51          44.47              64
+Cluster_3                  40.00            35.68         3.25          54.31                  40.00                19.23                   4.83          49.05              20
+Cluster_4                  61.89            88.11         1.42          92.01                  61.65                25.19                   8.05          81.33              87
+Cluster_5                  61.85            52.22         1.63          63.50                  61.80                24.60                   6.57          65.11             213
+Cluster_6                  78.49            79.32         1.57          77.33                  78.50                14.08                   7.99          79.69              84
+Cluster_7                  87.13            75.78         1.56          59.93                  86.91                20.39                   7.35          76.14              86
+Cluster_8                  83.70            32.12         1.22          40.56                  82.52                11.89                   6.14          61.20              19
+Cluster_9                  65.13            47.32         1.79          76.57                  65.26                16.20                   6.98          68.32             112
+Noise                      72.02            62.41         2.48          61.05                  72.03                19.56                   6.79          67.87            1184
+
+
+KEY FINDINGS:
+
+1. Clustering Method: DBSCAN (Density-Based)
+2. Parameters Used: eps=0.700, min_samples=19
+3. Clusters identified with outliers detected
+4. Noise points represent potential outliers requiring individual attention
+
+
+RECOMMENDATIONS:
+
+- Focus improvement efforts on clustered suppliers
+- Investigate noise points individually
+- Monitor cluster boundaries for supplier transitions

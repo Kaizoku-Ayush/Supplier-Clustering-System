@@ -1,0 +1,84 @@
+cluster_name,priority,recommendation
+Cluster_1,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_1,Monitor & Improve,Implement targeted quality control measures
+Cluster_1,Monitor & Improve,Regular performance reviews and feedback
+Cluster_1,Monitor & Improve,Consider additional training or support
+Cluster_10,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_10,Monitor & Improve,Implement targeted quality control measures
+Cluster_10,Monitor & Improve,Regular performance reviews and feedback
+Cluster_10,Monitor & Improve,Consider additional training or support
+Cluster_11,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_11,Monitor & Improve,Implement targeted quality control measures
+Cluster_11,Monitor & Improve,Regular performance reviews and feedback
+Cluster_11,Monitor & Improve,Consider additional training or support
+Cluster_12,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_12,Monitor & Improve,Implement targeted quality control measures
+Cluster_12,Monitor & Improve,Regular performance reviews and feedback
+Cluster_12,Monitor & Improve,Consider additional training or support
+Cluster_13,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_13,Monitor & Improve,Implement targeted quality control measures
+Cluster_13,Monitor & Improve,Regular performance reviews and feedback
+Cluster_13,Monitor & Improve,Consider additional training or support
+Cluster_14,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_14,Monitor & Improve,Implement targeted quality control measures
+Cluster_14,Monitor & Improve,Regular performance reviews and feedback
+Cluster_14,Monitor & Improve,Consider additional training or support
+Cluster_15,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_15,Monitor & Improve,Implement targeted quality control measures
+Cluster_15,Monitor & Improve,Regular performance reviews and feedback
+Cluster_15,Monitor & Improve,Consider additional training or support
+Cluster_16,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_16,Monitor & Improve,Implement targeted quality control measures
+Cluster_16,Monitor & Improve,Regular performance reviews and feedback
+Cluster_16,Monitor & Improve,Consider additional training or support
+Cluster_17,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_17,Monitor & Improve,Implement targeted quality control measures
+Cluster_17,Monitor & Improve,Regular performance reviews and feedback
+Cluster_17,Monitor & Improve,Consider additional training or support
+Cluster_18,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_18,Monitor & Improve,Implement targeted quality control measures
+Cluster_18,Monitor & Improve,Regular performance reviews and feedback
+Cluster_18,Monitor & Improve,Consider additional training or support
+Cluster_19,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_19,Monitor & Improve,Implement targeted quality control measures
+Cluster_19,Monitor & Improve,Regular performance reviews and feedback
+Cluster_19,Monitor & Improve,Consider additional training or support
+Cluster_2,Critical Improvement Needed,Comprehensive quality management system implementation
+Cluster_2,Critical Improvement Needed,Supplier development program enrollment
+Cluster_2,Critical Improvement Needed,Process capability studies and improvements
+Cluster_2,Critical Improvement Needed,Close monitoring and regular audits
+Cluster_2,Critical Improvement Needed,Consider supplier replacement if no improvement
+Cluster_3,Critical Improvement Needed,Comprehensive quality management system implementation
+Cluster_3,Critical Improvement Needed,Supplier development program enrollment
+Cluster_3,Critical Improvement Needed,Process capability studies and improvements
+Cluster_3,Critical Improvement Needed,Close monitoring and regular audits
+Cluster_3,Critical Improvement Needed,Consider supplier replacement if no improvement
+Cluster_4,Maintain Excellence,Continue current high-performance practices
+Cluster_4,Maintain Excellence,Share best practices with other suppliers
+Cluster_4,Maintain Excellence,Consider premium partnerships or incentives
+Cluster_4,Maintain Excellence,Monitor for any performance degradation
+Cluster_5,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_5,Monitor & Improve,Implement targeted quality control measures
+Cluster_5,Monitor & Improve,Regular performance reviews and feedback
+Cluster_5,Monitor & Improve,Consider additional training or support
+Cluster_6,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_6,Monitor & Improve,Implement targeted quality control measures
+Cluster_6,Monitor & Improve,Regular performance reviews and feedback
+Cluster_6,Monitor & Improve,Consider additional training or support
+Cluster_7,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_7,Monitor & Improve,Implement targeted quality control measures
+Cluster_7,Monitor & Improve,Regular performance reviews and feedback
+Cluster_7,Monitor & Improve,Consider additional training or support
+Cluster_8,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_8,Monitor & Improve,Implement targeted quality control measures
+Cluster_8,Monitor & Improve,Regular performance reviews and feedback
+Cluster_8,Monitor & Improve,Consider additional training or support
+Cluster_9,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_9,Monitor & Improve,Implement targeted quality control measures
+Cluster_9,Monitor & Improve,Regular performance reviews and feedback
+Cluster_9,Monitor & Improve,Consider additional training or support
+Noise,Investigate Outliers,Analyze why these suppliers don't fit typical patterns
+Noise,Investigate Outliers,Review data quality for outlier suppliers
+Noise,Investigate Outliers,Consider individual assessment and improvement plans
+Noise,Investigate Outliers,Monitor closely as they may represent unique cases
+Noise,Investigate Outliers,Evaluate if they should be excluded or given special attention
