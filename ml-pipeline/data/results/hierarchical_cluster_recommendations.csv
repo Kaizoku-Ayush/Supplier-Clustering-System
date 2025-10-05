@@ -1,0 +1,14 @@
+cluster_name,priority,recommendation
+Cluster_1,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_1,Monitor & Improve,Implement targeted quality control measures
+Cluster_1,Monitor & Improve,Regular performance reviews and feedback
+Cluster_1,Monitor & Improve,Consider additional training or support
+Cluster_2,Critical Improvement Needed,Comprehensive quality management system implementation
+Cluster_2,Critical Improvement Needed,Supplier development program enrollment
+Cluster_2,Critical Improvement Needed,Process capability studies and improvements
+Cluster_2,Critical Improvement Needed,Close monitoring and regular audits
+Cluster_2,Critical Improvement Needed,Consider supplier replacement if no improvement
+Cluster_3,Monitor & Improve,Focus on key weakness areas for improvement
+Cluster_3,Monitor & Improve,Implement targeted quality control measures
+Cluster_3,Monitor & Improve,Regular performance reviews and feedback
+Cluster_3,Monitor & Improve,Consider additional training or support
