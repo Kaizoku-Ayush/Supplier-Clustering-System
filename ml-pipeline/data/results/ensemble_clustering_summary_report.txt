@@ -1,0 +1,55 @@
+================================================================================
+ENSEMBLE CLUSTERING ANALYSIS SUMMARY REPORT
+================================================================================
+
+METHODOLOGY
+----------------------------------------
+Approach: Consensus clustering using co-association matrix
+Input Methods: K-Means, DBSCAN, Hierarchical
+Consensus Method: Hierarchical clustering on dissimilarity matrix
+Optimal Clusters: 3
+
+DATASET INFORMATION
+----------------------------------------
+Total data points: 2994
+Number of features: 7
+Features: delivery_reliability, cost_efficiency, defect_rate, quality_score, on_time_delivery_rate, response_time_hours, customer_satisfaction
+
+ENSEMBLE CLUSTERING RESULTS
+----------------------------------------
+Number of clusters: 3
+Silhouette score: 0.2755
+Davies-Bouldin score: 1.1367
+Calinski-Harabasz score: 560.40
+
+CLUSTER DISTRIBUTION
+----------------------------------------
+Cluster 0: 130 suppliers (4.3%)
+Cluster 1: 2531 suppliers (84.5%)
+Cluster 2: 333 suppliers (11.1%)
+
+================================================================================
+CLUSTER PROFILES AND RECOMMENDATIONS
+================================================================================
+
+
+CLUSTER 0: Premium Suppliers
+----------------------------------------
+Size: 130 suppliers (4.3%)
+Key Strengths: Quality Score, Delivery Reliability
+Improvement Areas: Cost Efficiency, Customer Satisfaction
+Strategy: Maintain partnership and leverage for critical projects
+
+CLUSTER 1: Premium Suppliers
+----------------------------------------
+Size: 2531 suppliers (84.5%)
+Key Strengths: Quality Score, Cost Efficiency
+Improvement Areas: Delivery Reliability, Customer Satisfaction
+Strategy: Maintain partnership and leverage for critical projects
+
+CLUSTER 2: Premium Suppliers
+----------------------------------------
+Size: 333 suppliers (11.1%)
+Key Strengths: Delivery Reliability, On Time Delivery Rate
+Improvement Areas: Quality Score, Customer Satisfaction
+Strategy: Maintain partnership and leverage for critical projects
