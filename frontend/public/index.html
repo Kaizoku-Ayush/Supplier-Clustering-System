@@ -1,1 +1,2883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Supplier Performance Evaluation Dashboard - Analyze suppliers using clustering based on delivery reliability, cost efficiency, and defect rates">
+    <meta name="keywords" content="supplier evaluation, clustering, performance analysis, supply chain">
+    <meta name="author" content="Your Company Name">
+    
+    <title>Supplier Performance Evaluation Dashboard</title>
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS (will be linked later) -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Temporary inline styles for Part 1 - will move to external CSS later */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        /* Navigation Bar Styles */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .navbar-brand i {
+            font-size: 2rem;
+        }
+        
+        .brand-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .brand-text p {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .navbar-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .navbar-menu li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .navbar-menu li a:hover {
+            opacity: 0.8;
+        }
+        
+        .navbar-menu li a.active {
+            border-bottom: 2px solid white;
+            padding-bottom: 4px;
+        }
+        
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .notification-icon {
+            position: relative;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .notification-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: background 0.3s ease;
+        }
+        
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: white;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .user-info {
+            color: white;
+        }
+        
+        .user-info .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: block;
+        }
+        
+        .user-info .user-role {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-wrap: wrap;
+                padding: 1rem;
+            }
+            
+            .navbar-menu {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+            
+            .navbar-menu.active {
+                display: flex;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .user-info {
+                display: none;
+            }
+        }
+        
+        /* PART 2 STYLES: Hero Section & Key Metrics */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hero-section {
+            margin-bottom: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .header-text h2 {
+            font-size: 2rem;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .header-text p {
+            color: #718096;
+            font-size: 1rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn-primary, .btn-secondary, .btn-filter {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-filter {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-filter:hover {
+            background: #3182ce;
+        }
+        
+        /* Date Filter Section */
+        .date-filter-section {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .date-input {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #2d3748;
+            transition: border-color 0.3s ease;
+        }
+        
+        .date-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+        
+        .metric-icon-blue {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+        }
+        
+        .metric-icon-green {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+        
+        .metric-icon-orange {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+            color: white;
+        }
+        
+        .metric-icon-red {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+        }
+        
+        .metric-icon-purple {
+            background: linear-gradient(135deg, #9f7aea, #805ad5);
+            color: white;
+        }
+        
+        .metric-icon-teal {
+            background: linear-gradient(135deg, #38b2ac, #319795);
+            color: white;
+        }
+        
+        .metric-details {
+            flex: 1;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.25rem;
+        }
+        
+        .metric-label {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-change {
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .metric-change.positive {
+            color: #38a169;
+        }
+        
+        .metric-change.negative {
+            color: #e53e3e;
+        }
+        
+        /* Quick Stats Bar */
+        .quick-stats-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            color: white;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .stat-high {
+            color: #9ae6b4;
+        }
+        
+        .stat-medium {
+            color: #fbd38d;
+        }
+        
+        .stat-low {
+            color: #feb2b2;
+        }
+        
+        .stat-divider {
+            width: 2px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Responsive Design for Part 2 */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-text h2 {
+                font-size: 1.5rem;
+            }
+            
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+            
+            .btn-primary, .btn-secondary, .btn-filter {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .date-filter-section {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-stats-bar {
+                flex-direction: column;
+            }
+            
+            .stat-divider {
+                width: 100%;
+                height: 2px;
+            }
+        }
+        
+        /* PART 3 STYLES: Data Input & Upload Section */
+        .data-upload-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .section-header {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .section-title i {
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+        
+        .section-title h3 {
+            font-size: 1.5rem;
+            color: #2d3748;
+            font-weight: 700;
+        }
+        
+        .section-description {
+            color: #718096;
+            font-size: 0.95rem;
+            margin-left: 2.25rem;
+        }
+        
+        /* Upload Container */
+        .upload-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e6f2ff;
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-content h4 {
+            font-size: 1.3rem;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-content p {
+            color: #718096;
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-formats {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .format-badge {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Upload Instructions */
+        .upload-instructions {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .upload-instructions h4 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .upload-instructions h4 i {
+            color: #667eea;
+        }
+        
+        .instruction-list {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+        
+        .instruction-list li {
+            padding: 0.75rem 0;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .instruction-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .instruction-list li i {
+            color: #38a169;
+            font-size: 1rem;
+        }
+        
+        .btn-template {
+            width: 100%;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-template:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        /* File Info Card */
+        .file-info-card {
+            background: linear-gradient(135deg, #48bb7820, #38a16920);
+            border: 2px solid #48bb78;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .file-info-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .file-icon-large {
+            width: 50px;
+            height: 50px;
+            background: #48bb78;
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .file-details {
+            flex: 1;
+        }
+        
+        .file-details h4 {
+            color: #2d3748;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .file-details p {
+            color: #38a169;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .btn-remove {
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: #e53e3e;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-remove:hover {
+            background: #c53030;
+            transform: rotate(90deg);
+        }
+        
+        .file-stats {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .file-stats .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #2d3748;
+            font-weight: 600;
+        }
+        
+        .file-stats .stat i {
+            color: #38a169;
+        }
+        
+        /* Data Preview */
+        .data-preview-section {
+            margin-bottom: 2rem;
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .preview-header h4 {
+            color: #2d3748;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .preview-note {
+            color: #718096;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .preview-table thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .preview-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .preview-table tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.2s ease;
+        }
+        
+        .preview-table tbody tr:hover {
+            background: #f7fafc;
+        }
+        
+        .preview-table td {
+            padding: 1rem;
+            color: #4a5568;
+        }
+        
+        /* Manual Entry */
+        .manual-entry-toggle {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .btn-toggle {
+            background: #edf2f7;
+            color: #4a5568;
+            border: 2px dashed #cbd5e0;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-toggle:hover {
+            background: #e2e8f0;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .manual-entry-form {
+            background: #f7fafc;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-top: 1.5rem;
+        }
+        
+        .manual-entry-form h4 {
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .required {
+            color: #e53e3e;
+        }
+        
+        .form-group input {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        /* Process Section */
+        .process-section {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .btn-process {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+        
+        .btn-process:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+        }
+        
+        .process-note {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        
+        /* Responsive Design for Part 3 */
+        @media (max-width: 968px) {
+            .upload-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn-process {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+        }
+        
+        /* PART 4 STYLES: Clustering Visualization Section */
+        /* ===== Clustering Comparison Table Styling ===== */
+#clustering-comparison {
+  padding: 60px 20px;
+  background: #f8f9fa;
+}
 
+.comparison-container {
+  max-width: 1000px;
+  margin: auto;
+  text-align: center;
+}
+
+.comparison-container h2 {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.comparison-container p {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: center;
+  font-size: 15px;
+}
+
+.comparison-table th {
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.comparison-table tr:hover {
+  background-color: #f2f6fc;
+  transition: background 0.3s ease;
+}
+
+/* Make it responsive */
+@media (max-width: 768px) {
+  .comparison-table th, .comparison-table td {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .comparison-container h2 {
+    font-size: 22px;
+  }
+}
+        .clustering-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        
+        /* Cluster Summary Cards */
+        .cluster-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .cluster-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .cluster-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .cluster-high {
+            background: linear-gradient(135deg, #48bb7815, #38a16915);
+            border: 2px solid #48bb78;
+        }
+        
+        .cluster-medium {
+            background: linear-gradient(135deg, #ed893615, #dd6b2015);
+            border: 2px solid #ed8936;
+        }
+        
+        .cluster-low {
+            background: linear-gradient(135deg, #f5656515, #e53e3e15);
+            border: 2px solid #f56565;
+        }
+        
+        .cluster-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cluster-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .cluster-high .cluster-icon {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+        
+        .cluster-medium .cluster-icon {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+        }
+        
+        .cluster-low .cluster-icon {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+        
+        .cluster-info h4 {
+            font-size: 1.2rem;
+            color: #2d3748;
+            margin-bottom: 0.25rem;
+        }
+        
+        .cluster-count {
+            color: #718096;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .cluster-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .metric-name {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value-high, .metric-value-medium, .metric-value-low {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .metric-value-high {
+            color: #38a169;
+        }
+        
+        .metric-value-medium {
+            color: #dd6b20;
+        }
+        
+        .metric-value-low {
+            color: #e53e3e;
+        }
+        
+        .cluster-percentage {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            font-weight: 700;
+            opacity: 0.2;
+        }
+        
+        /* Visualization Controls */
+        .visualization-controls {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-end;
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .control-select {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+            color: #2d3748;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        .control-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-update-chart {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            align-self: flex-end;
+        }
+        
+        .btn-update-chart:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        /* Visualization Container */
+        .visualization-container {
+            margin-bottom: 2rem;
+        }
+        
+        .chart-wrapper {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .chart-header h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .chart-legend {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .legend-high {
+            background: #48bb78;
+        }
+        
+        .legend-medium {
+            background: #ed8936;
+        }
+        
+        .legend-low {
+            background: #f56565;
+        }
+        
+        .chart-canvas {
+            padding: 2rem;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+        }
+        
+        #mainChart {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .chart-footer {
+            padding: 1rem 1.5rem;
+            background: #f7fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .chart-note {
+            color: #718096;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+        
+        /* Statistics Panel */
+        .statistics-panel {
+            background: #f7fafc;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        
+        .statistics-panel h4 {
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .stat-icon-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .stat-icon-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+        
+        .stat-icon-warning {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+        }
+        
+        .stat-icon-info {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+        }
+        
+        .stat-content h5 {
+            color: #4a5568;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-big {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 0.25rem 0;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 0.8rem;
+        }
+        
+        /* Insights Section */
+        .insights-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .insights-section h4 {
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .insight-card {
+            padding: 1.5rem;
+            border-radius: 10px;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            transition: transform 0.3s ease;
+        }
+        
+        .insight-card:hover {
+            transform: translateX(5px);
+        }
+        
+        .insight-card i {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+        
+        .insight-success {
+            background: linear-gradient(135deg, #48bb7810, #38a16910);
+            border-left: 4px solid #48bb78;
+        }
+        
+        .insight-success i {
+            color: #38a169;
+        }
+        
+        .insight-warning {
+            background: linear-gradient(135deg, #ed893610, #dd6b2010);
+            border-left: 4px solid #ed8936;
+        }
+        
+        .insight-warning i {
+            color: #dd6b20;
+        }
+        
+        .insight-info {
+            background: linear-gradient(135deg, #4299e110, #3182ce10);
+            border-left: 4px solid #4299e1;
+        }
+        
+        .insight-info i {
+            color: #3182ce;
+        }
+        
+        .insight-primary {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            border-left: 4px solid #667eea;
+        }
+        
+        .insight-primary i {
+            color: #667eea;
+        }
+        
+        .insight-content h5 {
+            color: #2d3748;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .insight-content p {
+            color: #718096;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* Responsive Design for Part 4 */
+        @media (max-width: 968px) {
+            .cluster-summary-grid,
+            .stats-grid,
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .visualization-controls {
+                flex-direction: column;
+            }
+            
+            .control-group {
+                width: 100%;
+            }
+            
+            .btn-update-chart {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .chart-canvas {
+                padding: 1rem;
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="#" class="navbar-brand">
+            <i class="fas fa-chart-network"></i>
+            <div class="brand-text">
+                <h1>SupplierIQ</h1>
+                <p>Performance Analytics</p>
+            </div>
+        </a>
+        
+        <ul class="navbar-menu" id="navbarMenu">
+            <li><a href="#dashboard" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="#analysis"><i class="fas fa-chart-pie"></i> Analysis</a></li>
+            <li><a href="#suppliers"><i class="fas fa-users"></i> Suppliers</a></li>
+            <li><a href="#reports"><i class="fas fa-file-alt"></i> Reports</a></li>
+            <li><a href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+        
+        <div class="navbar-user">
+            <div class="notification-icon">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </div>
+            
+            <div class="user-profile">
+                <div class="user-avatar">AB</div>
+                <div class="user-info">
+                    <span class="user-name">Abhay Pratap Singh</span>
+                    <span class="user-role">Admin</span>
+                </div>
+            </div>
+            
+            <div class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content Container (Parts 2-7 will go here) -->
+    <main class="main-container">
+        <!-- PART 2: Header/Hero Section with Key Metrics -->
+        <section class="hero-section" id="dashboard">
+            <div class="hero-content">
+                <div class="page-header">
+                    <div class="header-text">
+                        <h2>Supplier Performance Dashboard</h2>
+                        <p>Monitor and analyze supplier performance using advanced clustering algorithms</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-secondary">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                        <button class="btn-primary">
+                            <i class="fas fa-sync-alt"></i> Refresh Data
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Date Range Selector -->
+                <div class="date-filter-section">
+                    <div class="filter-group">
+                        <label for="startDate"><i class="fas fa-calendar-alt"></i> From:</label>
+                        <input type="date" id="startDate" class="date-input" value="2024-01-01">
+                    </div>
+                    <div class="filter-group">
+                        <label for="endDate"><i class="fas fa-calendar-alt"></i> To:</label>
+                        <input type="date" id="endDate" class="date-input" value="2024-12-31">
+                    </div>
+                    <button class="btn-filter">
+                        <i class="fas fa-filter"></i> Apply Filter
+                    </button>
+                </div>
+                
+                <!-- Key Metrics Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-blue">
+                            <i class="fas fa-truck-loading"></i>
+                        </div>
+                        <div class="metric-details">
+                            <h3 class="metric-value">247</h3>
+                            <p class="metric-label">Total Suppliers</p>
+                            <span class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 12% vs last month
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-green">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="metric-details">
+                            <h3 class="metric-value">87.5%</h3>
+                            <p class="metric-label">Avg Performance Score</p>
+                            <span class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 3.2% improvement
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-orange">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="metric-details">
+                            <h3 class="metric-value">94.2%</h3>
+                            <p class="metric-label">On-Time Delivery Rate</p>
+                            <span class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 1.8% better
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-red">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="metric-details">
+                            <h3 class="metric-value">15</h3>
+                            <p class="metric-label">Critical Alerts</p>
+                            <span class="metric-change negative">
+                                <i class="fas fa-arrow-down"></i> 3 new alerts
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-purple">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="metric-details">
+                            <h3 class="metric-value">92.8%</h3>
+                            <p class="metric-label">Cost Efficiency</p>
+                            <span class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 2.5% optimized
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon metric-icon-teal">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="metric-details">
+                            <h3 class="metric-value">2.3%</h3>
+                            <p class="metric-label">Avg Defect Rate</p>
+                            <span class="metric-change positive">
+                                <i class="fas fa-arrow-down"></i> 0.7% reduction
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats Bar -->
+                <div class="quick-stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-label">High Performers:</span>
+                        <span class="stat-value stat-high">89 suppliers</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-label">Medium Performers:</span>
+                        <span class="stat-value stat-medium">124 suppliers</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-label">Low Performers:</span>
+                        <span class="stat-value stat-low">34 suppliers</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-label">Last Updated:</span>
+                        <span class="stat-value">2 hours ago</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- PART 3: Data Input & Upload Section -->
+        <section class="data-upload-section" id="upload">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-upload"></i>
+                    <h3>Upload Supplier Data</h3>
+                </div>
+                <p class="section-description">Upload CSV or Excel files containing supplier performance data for clustering analysis</p>
+            </div>
+            
+            <div class="upload-container">
+                <!-- File Upload Area -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h4>Drag & Drop your file here</h4>
+                        <p>or click to browse</p>
+                        <div class="upload-formats">
+                            <span class="format-badge"><i class="fas fa-file-csv"></i> CSV</span>
+                            <span class="format-badge"><i class="fas fa-file-excel"></i> XLSX</span>
+                            <span class="format-badge"><i class="fas fa-file-excel"></i> XLS</span>
+                        </div>
+                        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" hidden>
+                    </div>
+                </div>
+                
+                <!-- Upload Instructions -->
+                <div class="upload-instructions">
+                    <h4><i class="fas fa-info-circle"></i> Required Columns</h4>
+                    <ul class="instruction-list">
+                        <li><i class="fas fa-check"></i> <strong>Supplier Name</strong> - Unique identifier</li>
+                        <li><i class="fas fa-check"></i> <strong>Delivery Reliability</strong> - Percentage (0-100)</li>
+                        <li><i class="fas fa-check"></i> <strong>Cost Efficiency</strong> - Percentage (0-100)</li>
+                        <li><i class="fas fa-check"></i> <strong>Defect Rate</strong> - Percentage (0-100)</li>
+                    </ul>
+                    <div class="download-template">
+                        <button class="btn-template">
+                            <i class="fas fa-download"></i> Download Sample Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- File Info Display (shown after upload) -->
+            <div class="file-info-card" id="fileInfoCard" style="display: none;">
+                <div class="file-info-header">
+                    <div class="file-icon-large">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="file-details">
+                        <h4 id="fileName">supplier_data.csv</h4>
+                        <p id="fileSize">2.5 MB • Uploaded successfully</p>
+                    </div>
+                    <button class="btn-remove" onclick="removeFile()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="file-stats">
+                    <div class="stat">
+                        <i class="fas fa-table"></i>
+                        <span id="rowCount">250 rows</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-columns"></i>
+                        <span id="columnCount">4 columns</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Valid format</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Preview Table -->
+            <div class="data-preview-section" id="dataPreview" style="display: none;">
+                <div class="preview-header">
+                    <h4><i class="fas fa-eye"></i> Data Preview</h4>
+                    <span class="preview-note">Showing first 5 rows</span>
+                </div>
+                <div class="table-container">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Supplier Name</th>
+                                <th>Delivery Reliability (%)</th>
+                                <th>Cost Efficiency (%)</th>
+                                <th>Defect Rate (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewTableBody">
+                            <tr>
+                                <td>1</td>
+                                <td>ABC Manufacturing Co.</td>
+                                <td>95.5</td>
+                                <td>88.2</td>
+                                <td>1.8</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>XYZ Industries Ltd.</td>
+                                <td>87.3</td>
+                                <td>92.1</td>
+                                <td>3.2</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Global Suppliers Inc.</td>
+                                <td>78.9</td>
+                                <td>75.4</td>
+                                <td>5.6</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Premium Parts Corp.</td>
+                                <td>98.2</td>
+                                <td>94.8</td>
+                                <td>0.9</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Quality Components LLC</td>
+                                <td>91.7</td>
+                                <td>89.5</td>
+                                <td>2.3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Manual Data Entry Option -->
+            <div class="manual-entry-toggle">
+                <button class="btn-toggle" onclick="toggleManualEntry()">
+                    <i class="fas fa-keyboard"></i> Or Enter Data Manually
+                </button>
+            </div>
+            
+            <div class="manual-entry-form" id="manualEntryForm" style="display: none;">
+                <h4><i class="fas fa-edit"></i> Add Supplier Manually</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="supplierName">Supplier Name <span class="required">*</span></label>
+                        <input type="text" id="supplierName" placeholder="Enter supplier name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="deliveryReliability">Delivery Reliability (%) <span class="required">*</span></label>
+                        <input type="number" id="deliveryReliability" min="0" max="100" step="0.1" placeholder="0-100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="costEfficiency">Cost Efficiency (%) <span class="required">*</span></label>
+                        <input type="number" id="costEfficiency" min="0" max="100" step="0.1" placeholder="0-100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="defectRate">Defect Rate (%) <span class="required">*</span></label>
+                        <input type="number" id="defectRate" min="0" max="100" step="0.1" placeholder="0-100" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                    <button class="btn-primary">
+                        <i class="fas fa-plus"></i> Add Supplier
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Process Data Button -->
+            <div class="process-section">
+                <button class="btn-process" onclick="processData()">
+                    <i class="fas fa-cogs"></i> Process Data & Run Clustering Analysis
+                </button>
+                <p class="process-note">This will analyze your supplier data and generate performance clusters</p>
+            </div>
+        </section>
+        
+        <!-- PART 4: Clustering Visualization Section -->
+         <div class="chart-canvas" id="clusterChart">
+  <canvas id="supplierGraph" width="800" height="500"></canvas>
+</div>
+
+        <section class="clustering-section" id="analysis">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-project-diagram"></i>
+                    <h3>Clustering Analysis Results</h3>
+                </div>
+                <p class="section-description">Suppliers grouped into performance clusters based on delivery reliability, cost efficiency, and defect rates</p>
+            </div>
+            
+            <!-- Cluster Summary Cards -->
+            <div class="cluster-summary-grid">
+                <div class="cluster-card cluster-high">
+                    <div class="cluster-header">
+                        <div class="cluster-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="cluster-info">
+                            <h4>High Performers</h4>
+                            <p class="cluster-count">89 Suppliers</p>
+                        </div>
+                    </div>
+                    <div class="cluster-metrics">
+                        <div class="metric-row">
+                            <span class="metric-name">Avg Delivery:</span>
+                            <span class="metric-value-high">96.8%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Avg Cost Eff:</span>
+                            <span class="metric-value-high">94.2%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Avg Defects:</span>
+                            <span class="metric-value-high">1.2%</span>
+                        </div>
+                    </div>
+                    <div class="cluster-percentage">36%</div>
+                </div>
+                
+                <div class="cluster-card cluster-medium">
+                    <div class="cluster-header">
+                        <div class="cluster-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="cluster-info">
+                            <h4>Medium Performers</h4>
+                            <p class="cluster-count">124 Suppliers</p>
+                        </div>
+                    </div>
+                    <div class="cluster-metrics">
+                        <div class="metric-row">
+                            <span class="metric-name">Avg Delivery:</span>
+                            <span class="metric-value-medium">87.5%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Avg Cost Eff:</span>
+                            <span class="metric-value-medium">85.3%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Avg Defects:</span>
+                            <span class="metric-value-medium">3.1%</span>
+                        </div>
+                    </div>
+                    <div class="cluster-percentage">50%</div>
+                </div>
+                
+                <div class="cluster-card cluster-low">
+                    <div class="cluster-header">
+                        <div class="cluster-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="cluster-info">
+                            <h4>Low Performers</h4>
+                            <p class="cluster-count">34 Suppliers</p>
+                        </div>
+                    </div>
+                    <div class="cluster-metrics">
+                        <div class="metric-row">
+                            <span class="metric-name">Avg Delivery:</span>
+                            <span class="metric-value-low">72.3%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Avg Cost Eff:</span>
+                            <span class="metric-value-low">68.9%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Avg Defects:</span>
+                            <span class="metric-value-low">6.8%</span>
+                        </div>
+                    </div>
+                    <div class="cluster-percentage">14%</div>
+                </div>
+            </div>
+            <h2>Clustering Techniques Performance Comparison</h2>
+
+  <table>
+    <caption>Dataset: Customer Segmentation</caption>
+    <thead>
+      <tr>
+        <th>Technique</th>
+        <th>Silhouette Score</th>
+        <th>Davies-Bouldin Index</th>
+        <th>Execution Time (s)</th>
+        <th>Number of Clusters</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>K-Means</td>
+        <td>0.67</td>
+        <td>0.52</td>
+        <td>1.34</td>
+        <td>5</td>
+      </tr>
+      <tr>
+        <td>DBSCAN</td>
+        <td>0.59</td>
+        <td>0.68</td>
+        <td>2.11</td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td>Hierarchical</td>
+        <td>0.63</td>
+        <td>0.60</td>
+        <td>3.25</td>
+        <td>5</td>
+      </tr>
+    </tbody>
+  </table>
+            
+            <!-- Visualization Controls -->
+            <div class="visualization-controls">
+                <div class="control-group">
+                    <label for="chartType"><i class="fas fa-chart-bar"></i> Chart Type:</label>
+                    <select id="chartType" class="control-select">
+                        <option value="scatter">Scatter Plot</option>
+                        <option value="bar">Bar Chart</option>
+                        <option value="radar">Radar Chart</option>
+                        <option value="bubble">Bubble Chart</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="xAxis"><i class="fas fa-arrows-alt-h"></i> X-Axis:</label>
+                    <select id="xAxis" class="control-select">
+                        <option value="delivery">Delivery Reliability</option>
+                        <option value="cost">Cost Efficiency</option>
+                        <option value="defect">Defect Rate</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="yAxis"><i class="fas fa-arrows-alt-v"></i> Y-Axis:</label>
+                    <select id="yAxis" class="control-select">
+                        <option value="cost">Cost Efficiency</option>
+                        <option value="delivery">Delivery Reliability</option>
+                        <option value="defect">Defect Rate</option>
+                    </select>
+                </div>
+                
+                <button class="btn-update-chart">
+                    <i class="fas fa-sync"></i> Update Chart
+                </button>
+            </div>
+            
+            <!-- Main Visualization Container -->
+             <section class="nine-box-section" style="display: flex; align-items: center; justify-content: space-between; padding: 60px 10%; background-color: #fff8f3; flex-wrap: wrap;">
+  <div class="nine-box-text" style="flex: 1; min-width: 280px; margin-right: 40px;">
+    <h2 style="font-size: 2rem; font-weight: 700; color: #222;">9-box</h2>
+    <p style="font-size: 1.1rem; color: #555; line-height: 1.6; margin-top: 20px;">
+      Empower leaders with 9-box insights to map employee performance vs potential, calibrate reviews, 
+      and make succession planning decisions.
+    </p>
+  </div>
+
+  <div class="nine-box-image" style="flex: 1; text-align: center; min-width: 280px;">
+    <!-- 🔽 Replace this image path with your actual file path -->
+    <img src="c:\Users\dell\Pictures\Screenshots\Screenshot 2025-10-09 221933.png" alt="9-box grid" style="max-width: 100%; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+  </div>
+</section>
+
+            <div class="visualization-container">
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <h4><i class="fas fa-chart-scatter"></i> Supplier Performance Clustering</h4>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot legend-high"></span>
+                                <span>High Performers</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot legend-medium"></span>
+                                <span>Medium Performers</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot legend-low"></span>
+                                <span>Low Performers</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart Canvas -->
+                    <div class="chart-canvas" id="clusterChart">
+                        <canvas id="mainChart" width="800" height="500"></canvas>
+                    </div>
+                    
+                    <div class="chart-footer">
+                        <p class="chart-note">
+                            <i class="fas fa-info-circle"></i> 
+                            Hover over data points to see detailed supplier information
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cluster Statistics Panel -->
+            <div class="statistics-panel">
+                <h4><i class="fas fa-chart-pie"></i> Cluster Distribution & Statistics</h4>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-primary">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h5>Clustering Accuracy</h5>
+                            <p class="stat-big">94.7%</p>
+                            <span class="stat-label">Silhouette Score: 0.82</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-success">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h5>Number of Clusters</h5>
+                            <p class="stat-big">3</p>
+                            <span class="stat-label">Optimal K determined by Elbow Method</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-warning">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h5>Cluster Balance</h5>
+                            <p class="stat-big">Good</p>
+                            <span class="stat-label">50% in medium, 36% high, 14% low</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-info">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h5>Algorithm Used</h5>
+                            <p class="stat-big">K-Means</p>
+                            <span class="stat-label">With StandardScaler normalization</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Interactive Insights -->
+            <div class="insights-section">
+                <h4><i class="fas fa-lightbulb"></i> Key Insights</h4>
+                <div class="insights-grid">
+                    <div class="insight-card insight-success">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="insight-content">
+                            <h5>Strong Core Performance</h5>
+                            <p>86% of suppliers meet or exceed baseline performance standards</p>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card insight-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="insight-content">
+                            <h5>Attention Required</h5>
+                            <p>34 suppliers in low-performing cluster need immediate intervention</p>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card insight-info">
+                        <i class="fas fa-chart-line"></i>
+                        <div class="insight-content">
+                            <h5>Growth Opportunity</h5>
+                            <p>124 medium performers show potential for advancement to high cluster</p>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-card insight-primary">
+                        <i class="fas fa-trophy"></i>
+                        <div class="insight-content">
+                            <h5>Excellence Benchmark</h5>
+                            <p>Top performers maintain 96.8% delivery reliability with minimal defects</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- PART 5: Supplier Analysis Table -->
+        <section class="supplier-table-section" id="suppliers">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-users"></i>
+                    <h3>Detailed Supplier Analysis</h3>
+                </div>
+                <p class="section-description">Complete list of suppliers with performance metrics and cluster assignments</p>
+            </div>
+            
+            <!-- Table Controls -->
+            <div class="table-controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchSupplier" placeholder="Search suppliers..." onkeyup="searchSuppliers()">
+                </div>
+                
+                <div class="filter-controls">
+                    <select id="clusterFilter" class="filter-select" onchange="filterByCluster()">
+                        <option value="all">All Clusters</option>
+                        <option value="high">High Performers</option>
+                        <option value="medium">Medium Performers</option>
+                        <option value="low">Low Performers</option>
+                    </select>
+                    
+                    <select id="sortBy" class="filter-select" onchange="sortTable()">
+                        <option value="name">Sort by Name</option>
+                        <option value="delivery">Sort by Delivery</option>
+                        <option value="cost">Sort by Cost Efficiency</option>
+                        <option value="defect">Sort by Defect Rate</option>
+                        <option value="performance">Sort by Performance</option>
+                    </select>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-action btn-export">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                    <button class="btn-action btn-print">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Suppliers Table -->
+            <div class="table-wrapper">
+                <table class="suppliers-table" id="suppliersTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll" onclick="toggleSelectAll()">
+                            </th>
+                            <th>#</th>
+                            <th>Supplier Name</th>
+                            <th>Delivery Reliability</th>
+                            <th>Cost Efficiency</th>
+                            <th>Defect Rate</th>
+                            <th>Performance Score</th>
+                            <th>Cluster</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- High Performers -->
+                        <tr class="cluster-high-row">
+                            <td><input type="checkbox" class="row-checkbox"></td>
+                            <td>1</td>
+                            <td class="supplier-name">
+                                <div class="supplier-info">
+                                    <span class="supplier-icon">PM</span>
+                                    <span>Premium Parts Corp.</span>
+                                </div>
+                            </td>
+                            <td><span class="metric-badge badge-excellent">98.2%</span></td>
+                            <td><span class="metric-badge badge-excellent">94.8%</span></td>
+                            <td><span class="metric-badge badge-excellent">0.9%</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 97%"></div>
+                                    <span class="progress-text">97%</span>
+                                </div>
+                            </td>
+                            <td><span class="cluster-badge cluster-badge-high">High</span></td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon" title="More"><i class="fas fa-ellipsis-v"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="cluster-high-row">
+                            <td><input type="checkbox" class="row-checkbox"></td>
+                            <td>2</td>
+                            <td class="supplier-name">
+                                <div class="supplier-info">
+                                    <span class="supplier-icon">AB</span>
+                                    <span>ABC Manufacturing Co.</span>
+                                </div>
+                            </td>
+                            <td><span class="metric-badge badge-excellent">95.5%</span></td>
+                            <td><span class="metric-badge badge-good">88.2%</span></td>
+                            <td><span class="metric-badge badge-excellent">1.8%</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 93%"></div>
+                                    <span class="progress-text">93%</span>
+                                </div>
+                            </td>
+                            <td><span class="cluster-badge cluster-badge-high">High</span></td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon" title="More"><i class="fas fa-ellipsis-v"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="cluster-high-row">
+                            <td><input type="checkbox" class="row-checkbox"></td>
+                            <td>3</td>
+                            <td class="supplier-name">
+                                <div class="supplier-info">
+                                    <span class="supplier-icon">QC</span>
+                                    <span>Quality Components LLC</span>
+                                </div>
+                            </td>
+                            <td><span class="metric-badge badge-excellent">91.7%</span></td>
+                            <td><span class="metric-badge badge-good">89.5%</span></td>
+                            <td><span class="metric-badge badge-good">2.3%</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 91%"></div>
+                                    <span class="progress-text">91%</span>
+                                </div>
+                            </td>
+                            <td><span class="cluster-badge cluster-badge-high">High</span></td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon" title="More"><i class="fas fa-ellipsis-v"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Medium Performers -->
+                        <tr class="cluster-medium-row">
+                            <td><input type="checkbox" class="row-checkbox"></td>
+                            <td>4</td>
+                            <td class="supplier-name">
+                                <div class="supplier-info">
+                                    <span class="supplier-icon">XY</span>
+                                    <span>XYZ Industries Ltd.</span>
+                                </div>
+                            </td>
+                            <td><span class="metric-badge badge-good">87.3%</span></td>
+                            <td><span class="metric-badge badge-excellent">92.1%</span></td>
+                            <td><span class="metric-badge badge-average">3.2%</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill progress-medium" style="width: 85%"></div>
+                                    <span class="progress-text">85%</span>
+                                </div>
+                            </td>
+                            <td><span class="cluster-badge cluster-badge-medium">Medium</span></td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon" title="More"><i class="fas fa-ellipsis-v"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="cluster-medium-row">
+                            <td><input type="checkbox" class="row-checkbox"></td>
+                            <td>5</td>
+                            <td class="supplier-name">
+                                <div class="supplier-info">
+                                    <span class="supplier-icon">TS</span>
+                                    <span>TechSupply Solutions</span>
+                                </div>
+                            </td>
+                            <td><span class="metric-badge badge-good">84.6%</span></td>
+                            <td><span class="metric-badge badge-good">86.3%</span></td>
+                            <td><span class="metric-badge badge-average">3.5%</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill progress-medium" style="width: 82%"></div>
+                                    <span class="progress-text">82%</span>
+                                </div>
+                            </td>
+                            <td><span class="cluster-badge cluster-badge-medium">Medium</span></td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon" title="More"><i class="fas fa-ellipsis-v"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="cluster-medium-row">
+                            <td><input type="checkbox" class="row-checkbox"></td>
+                            <td>6</td>
+                            <td class="supplier-name">
+                                <div class="supplier-info">
+                                    <span class="supplier-icon">RS</span>
+                                    <span>Reliable Supplies Inc.</span>
+                                </div>
+                            </td>
+                            <td><span class="metric-badge badge-good">88.9%</span></td>
+                            <td><span class="metric-badge badge-average">79.4%</span></td>
+                            <td><span class="metric-badge badge-average">4.1%</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill progress-medium" style="width: 81%"></div>
+                                    <span class="progress-text">81%</span>
+                                </div>
+                            </td>
+                            <td><span class="cluster-badge cluster-badge-medium">Medium</span></td>
+                            <td><span class="status-badge status-warning">Review</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon" title="More"><i class="fas fa-ellipsis-v"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Low Performers -->
+                        <tr class="cluster-low-row">
+                            <td><input type="checkbox" class="row-checkbox"></td>
+                            <td>7</td>
+                            <td class="supplier-name">
+                                <div class="supplier-info">
+                                    <span class="supplier-icon">GS</span>
+                                    <span>Global Suppliers Inc.</span>
+                                </div>
+                            </td>
+                            <td><span class="metric-badge badge-poor">78.9%</span></td>
+                            <td><span class="metric-badge badge-poor">75.4%</span></td>
+                            <td><span class="metric-badge badge-poor">5.6%</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill progress-low" style="width: 72%"></div>
+                                    <span class="progress-text">72%</span>
+                                </div>
+                            </td>
+                            <td><span class="cluster-badge cluster-badge-low">Low</span></td>
+                            <td><span class="status-badge status-critical">Critical</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon" title="More"><i class="fas fa-ellipsis-v"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="cluster-low-row">
+                            <td><input type="checkbox" class="row-checkbox"></td>
+                            <td>8</td>
+                            <td class="supplier-name">
+                                <div class="supplier-info">
+                                    <span class="supplier-icon">BC</span>
+                                    <span>Budget Components Co.</span>
+                                </div>
+                            </td>
+                            <td><span class="metric-badge badge-poor">65.2%</span></td>
+                            <td><span class="metric-badge badge-poor">68.7%</span></td>
+                            <td><span class="metric-badge badge-poor">7.8%</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill progress-low" style="width: 64%"></div>
+                                    <span class="progress-text">64%</span>
+                                </div>
+                            </td>
+                            <td><span class="cluster-badge cluster-badge-low">Low</span></td>
+                            <td><span class="status-badge status-critical">Critical</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                                    <button class="btn-icon" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-icon" title="More"><i class="fas fa-ellipsis-v"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="table-pagination">
+                <div class="pagination-info">
+                    Showing <strong>1-8</strong> of <strong>247</strong> suppliers
+                </div>
+                <div class="pagination-controls">
+                    <button class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn">...</button>
+                    <button class="pagination-btn">31</button>
+                    <button class="pagination-btn">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="rows-per-page">
+                    <label>Rows per page:</label>
+                    <select class="filter-select">
+                        <option value="8">8</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Content sections will be added in subsequent parts -->
+    </main>
+    
+    <!-- Footer (Part 8 will be added later) -->
+     <!-- CSV parsing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    
+    <script>
+        // Mobile menu toggle function
+        function toggleMobileMenu() {
+            const menu = document.getElementById('navbarMenu');
+            menu.classList.toggle('active');
+        }
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.navbar-menu a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                
+                // Update active state
+                document.querySelectorAll('.navbar-menu a').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Close mobile menu if open
+                if (window.innerWidth <= 768) {
+                    document.getElementById('navbarMenu').classList.remove('active');
+                }
+            });
+        });
+        
+        // PART 3 JAVASCRIPT: File Upload & Data Entry Functions
+        
+        // File upload functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfoCard = document.getElementById('fileInfoCard');
+        const dataPreview = document.getElementById('dataPreview');
+        
+        // Click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+        
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+
+/* ---- helper config ---- */
+const REQUIRED_COLUMNS = ['company_name','delivery_reliability','cost_efficiency','defect_rate'];
+// mapping friendly names (used for UI) -> csv keys (if you want different labels later update here)
+const FEATURE_MAP = {
+  delivery: 'delivery_reliability',
+  cost: 'cost_efficiency',
+  defect: 'defect_rate',
+  overall: 'overall_score'
+};
+
+/* ---- parsing & cleaning helpers ---- */
+function parsePercent(value) {
+  if (value === null || value === undefined || value === '') return NaN;
+  if (typeof value === 'number') return value;
+  const s = String(value).trim();
+  // remove commas and percent sign
+  const cleaned = s.replace(/,/g,'').replace('%','');
+  const n = parseFloat(cleaned);
+  if (isNaN(n)) return NaN;
+  // if it's a ratio like 0.95 treat as percent
+  if (n > 0 && n <= 1) return +(n * 100).toFixed(3);
+  return +n.toFixed(3);
+}
+
+function toTitle(s) {
+  if (!s) return '';
+  return s.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/* ---- UI update helpers ---- */
+function updateFileStats(parsedRows, headers) {
+  document.getElementById('rowCount').textContent = (parsedRows||[]).length + ' rows';
+  document.getElementById('columnCount').textContent = (headers||[]).length + ' columns';
+}
+
+function buildPreviewTable(data, headers) {
+  const tbody = document.getElementById('previewTableBody');
+  const theadRow = document.querySelector('.preview-table thead tr');
+  // rebuild header dynamically
+  theadRow.innerHTML = '<th>#</th>' + headers.map(h => `<th>${toTitle(h)}</th>`).join('');
+  tbody.innerHTML = '';
+  const rows = (data || []).slice(0,5);
+  rows.forEach((row, idx) => {
+    const cells = headers.map(h => {
+      const val = row[h];
+      // format numeric percent columns
+      if (h === FEATURE_MAP.delivery || h === FEATURE_MAP.cost || h === FEATURE_MAP.defect) {
+        return isNaN(val) ? '' : `${val}%`;
+      }
+      return val === undefined || val === null ? '' : String(val);
+    });
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${idx+1}</td>${cells.map(c => `<td>${c}</td>`).join('')}`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ---- CSV parse & validation ---- */
+function parseCSVFile(file) {
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      const headers = results.meta.fields || [];
+      // check required columns
+      const missing = REQUIRED_COLUMNS.filter(c => !headers.includes(c));
+      if (missing.length) {
+        alert('Uploaded file is missing required columns:\n' + missing.join(', ') + '\n\nPlease fix the file or map columns.');
+        removeFile();
+        return;
+      }
+      // clean rows
+      const cleaned = results.data.map((r, i) => {
+        const out = {...r};
+        // standardize key names: trim strings
+        Object.keys(out).forEach(k => { if (typeof out[k] === 'string') out[k] = out[k].trim(); });
+
+        // parse percent-like fields
+        out.delivery_reliability = parsePercent(out.delivery_reliability);
+        out.cost_efficiency = parsePercent(out.cost_efficiency);
+        out.defect_rate = parsePercent(out.defect_rate);
+
+        // fallback supplier name/id
+        out.company_name = out.company_name || out.supplier_name || ('Supplier ' + (i+1));
+        out.supplier_id = out.supplier_id || ('SUP_' + (i+1).toString().padStart(3,'0'));
+        return out;
+      });
+
+      // basic missing-value handling: drop rows with no company_name
+      const finalData = cleaned.filter(r => r.company_name && !isNaN(r.delivery_reliability));
+
+      // store globally for later processing
+      window.parsedData = finalData;
+      window.parsedHeaders = headers;
+
+      // show UI
+      updateFileStats(finalData, headers);
+      buildPreviewTable(finalData, headers);
+      alert('File parsed: ' + finalData.length + ' valid rows loaded.');
+    },
+    error: function(err) {
+      alert('Parse error: ' + err.message);
+      removeFile();
+    }
+  });
+}
+
+/* ---- wire into existing handleFile/removeFile/processData ---- */
+function handleFile(file) {
+  if (!file) return;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB • Uploaded`;
+  document.getElementById('fileInfoCard').style.display = 'block';
+  document.getElementById('dataPreview').style.display = 'block';
+
+  // accept CSV for now; if XLSX add code using SheetJS
+  if (/\.csv$/i.test(file.name)) {
+    parseCSVFile(file);
+  } else if (/\.xlsx?$/i.test(file.name) && window.XLSX) {
+    // Basic Excel handling (small version). If you want this, I can provide a robust snippet.
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type:'array'});
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(firstSheet, {defval: ''});
+      // we can then run the same cleaning pipeline on json
+      Papa.parse(Papa.unparse(json), {header:true, complete: function(results){ parseCSVFile(new File([Papa.unparse(results.data)], 'temp.csv')); }});
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    alert('Unsupported file type. Please upload a CSV (or .xlsx if enabled).');
+    removeFile();
+  }
+}
+
+function removeFile() {
+  document.getElementById('fileInput').value = '';
+  window.parsedData = null;
+  window.parsedHeaders = null;
+  document.getElementById('fileInfoCard').style.display = 'none';
+  document.getElementById('dataPreview').style.display = 'none';
+}
+
+/* ---- simple processData: prepare numeric matrix for clustering ---- */
+function processData() {
+  if (!window.parsedData || window.parsedData.length === 0) {
+    alert('Please upload and parse a cleaned CSV first.');
+    return;
+  }
+
+  // prepare feature matrix (delivery, cost, defect)
+  const matrix = window.parsedData.map(r => [
+    isNaN(r.delivery_reliability) ? 0 : r.delivery_reliability,
+    isNaN(r.cost_efficiency) ? 0 : r.cost_efficiency,
+    isNaN(r.defect_rate) ? 0 : r.defect_rate
+  ]);
+
+  // basic imputation: for any column where all zeros, warn
+  const colMeans = [0,0,0];
+  for (let j=0;j<3;j++) {
+    let sum=0, cnt=0;
+    for (let i=0;i<matrix.length;i++){
+      if (!isNaN(matrix[i][j])) { sum += matrix[i][j]; cnt++; }
+    }
+    colMeans[j] = cnt ? sum/cnt : 0;
+    // fill missing with mean
+    for (let i=0;i<matrix.length;i++){
+      if (isNaN(matrix[i][j]) || matrix[i][j] === null) matrix[i][j] = colMeans[j];
+    }
+  }
+
+  // Standardize: subtract mean / divide stdev (simple)
+  function standardize(mat) {
+    const means = [], stds = [];
+    for (let j=0;j<mat[0].length;j++){
+      let sum=0, sumsq=0, n=mat.length;
+      for (let i=0;i<n;i++){ sum += mat[i][j]; sumsq += mat[i][j]*mat[i][j]; }
+      const mean = sum/n;
+      const variance = (sumsq/n) - (mean*mean);
+      const sd = Math.sqrt(Math.max(variance, 1e-9));
+      means.push(mean); stds.push(sd);
+      for (let i=0;i<n;i++) mat[i][j] = (mat[i][j] - mean) / sd;
+    }
+    return {mat, means, stds};
+  }
+
+  const scaled = standardize(matrix).mat;
+
+  // At this point scaled is ready for k-means / clustering.
+  // Here we only show an example summary, and set window.clusterInput for your clustering function.
+  window.clusterInput = scaled;
+  alert('Data cleaned & normalized. ' + scaled.length + ' rows ready for clustering.\n\nNext: run K-Means (client-side or server-side).');
+
+  // OPTIONAL: call runKmeans(scaled, 3) if you wire a kmeans lib or server call.
+}
+</script>
+
+        // Toggle manual entry form
+        function toggleManualEntry() {
+            const form = document.getElementById('manualEntryForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // Reset form
+        function resetForm() {
+            document.getElementById('supplierName').value = '';
+            document.getElementById('deliveryReliability').value = '';
+            document.getElementById('costEfficiency').value = '';
+            document.getElementById('defectRate').value = '';
+        }
+    </script>
+    <!-- Load Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<!-- Create Graph -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const ctx = document.getElementById("supplierGraph").getContext("2d");
+
+  Papa.parse("cleaned_data.csv", {
+    download: true,
+    header: true,
+    complete: function (results) {
+      const rows = results.data.filter(r => r["Delivery Reliability"] && r["Cost Efficiency"]);
+
+      const chartData = rows.map(r => ({
+        x: parseFloat(r["Delivery Reliability"]),
+        y: parseFloat(r["Cost Efficiency"]),
+        r: 10, // fixed bubble size for now
+        supplier: r["Supplier Name"]
+      }));
+
+      new Chart(ctx, {
+        type: "scatter",
+        data: {
+          datasets: [{
+            label: "Supplier Performance",
+            data: chartData,
+            backgroundColor: "rgba(102,126,234,0.6)",
+            borderColor: "rgba(102,126,234,1)",
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "Supplier Performance: Delivery vs Cost Efficiency"
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const d = context.raw;
+                  return `${d.supplier} (Delivery: ${d.x}%, Cost: ${d.y}%)`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: { title: { display: true, text: "Delivery Reliability (%)" }, min: 0, max: 100 },
+            y: { title: { display: true, text: "Cost Efficiency (%)" }, min: 0, max: 100 }
+          }
+        }
+      });
+    },
+    error: function (error) {
+      console.error("Error loading CSV:", error);
+    }
+  });
+});
+</script>
+</body>
+</html>
