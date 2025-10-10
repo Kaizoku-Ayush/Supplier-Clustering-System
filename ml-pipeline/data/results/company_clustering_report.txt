@@ -1,0 +1,44 @@
+================================================================================
+COMPANY CLUSTERING ANALYSIS - COMPREHENSIVE REPORT
+================================================================================
+
+OBJECTIVE
+----------------------------------------
+Classify 25 companies into 3 performance tiers:
+  • High Performance (Top tier)
+  • Mid Performance (Balanced)
+  • Low Performance (Needs improvement)
+
+METHODOLOGY
+----------------------------------------
+Four clustering approaches applied:
+  1. K-Means Clustering
+  2. DBSCAN (Density-based)
+  3. Hierarchical Clustering
+  4. Ensemble (Consensus of all three)
+
+FEATURES USED
+----------------------------------------
+  1. delivery_reliability_mean
+  2. cost_efficiency_mean
+  3. defect_rate_mean
+  4. quality_score_mean
+  5. customer_satisfaction_mean
+  6. overall_score_mean
+  7. order_volume_mean
+
+PERFORMANCE COMPARISON
+----------------------------------------
+      Method  Silhouette  Davies-Bouldin  Calinski-Harabasz
+     K-Means    0.268368        1.268283           9.650938
+      DBSCAN    0.366657        0.819099          12.518339
+Hierarchical    0.286877        0.473048           4.488191
+    Ensemble    0.268368        1.268283           9.650938
+
+RECOMMENDED CLASSIFICATION (Ensemble Method)
+----------------------------------------
+Performance Tier  Count Percentage                                    Strategy                                                                                                  Suppliers
+High Performance     12      48.0% Maintain Excellence & Strategic Partnership SUP_001, SUP_003, SUP_005, SUP_007, SUP_009, SUP_012, SUP_013, SUP_015, SUP_016, SUP_017, SUP_019, SUP_024
+ Mid Performance     10      40.0%        Continuous Improvement & Development                   SUP_004, SUP_008, SUP_010, SUP_011, SUP_014, SUP_018, SUP_020, SUP_021, SUP_023, SUP_025
+ Low Performance      3      12.0%   Intensive Support or Alternative Sourcing                                                                                  SUP_002, SUP_006, SUP_022
+
