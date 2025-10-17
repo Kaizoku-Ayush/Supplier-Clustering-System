@@ -25,7 +25,6 @@ class DataLoader:
     def __init__(self):
         """Initialize data loader with database connection"""
         self.db = get_db()
-        # ml-pipeline is at the root of the project, not in backend
         self.base_path = os.path.join(os.path.dirname(__file__), '..', '..', 'ml-pipeline')
         
     def clear_collections(self):
@@ -50,12 +49,17 @@ class DataLoader:
         # Read CSV files
         stats_path = os.path.join(self.base_path, 'data', 'raw', 'supplier_aggregated_stats.csv')
         clusters_path = os.path.join(self.base_path, 'data', 'results', 'company_ensemble_clusters.csv')
+        metadata_path = os.path.join(self.base_path, 'data', 'raw', 'supplier_metadata_display.csv')
         
         stats_df = pd.read_csv(stats_path)
         clusters_df = pd.read_csv(clusters_path)
+        metadata_df = pd.read_csv(metadata_path)
         
         # Merge on supplier_id
         merged_df = pd.merge(stats_df, clusters_df[['supplier_id', 'cluster', 'performance_tier']], 
+                            on='supplier_id', how='left')
+        # Merge with metadata to get company names
+        merged_df = pd.merge(merged_df, metadata_df[['supplier_id', 'company_name']], 
                             on='supplier_id', how='left')
         
         print(f"   Read {len(merged_df)} companies from CSV files")
@@ -65,7 +69,7 @@ class DataLoader:
         for _, row in merged_df.iterrows():
             doc = {
                 "supplier_id": row['supplier_id'],
-                "company_name": row['supplier_id'],  # Use supplier_id as name for now
+                "company_name": row['company_name'],
                 
                 # Performance metrics
                 "performance": {

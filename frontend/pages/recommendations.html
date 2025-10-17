@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendations - SupplierIQ</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/common.css">
+    
+    <style>
+        .recommendations-grid {
+            display: grid;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .recommendation-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            position: relative;
+        }
+        
+        .card-header-high {
+            background: linear-gradient(135deg, #48bb7815, #38a16915);
+            border-bottom: 3px solid #48bb78;
+        }
+        
+        .card-header-mid {
+            background: linear-gradient(135deg, #ed893615, #dd6b2015);
+            border-bottom: 3px solid #ed8936;
+        }
+        
+        .card-header-low {
+            background: linear-gradient(135deg, #f5656515, #e53e3e15);
+            border-bottom: 3px solid #f56565;
+        }
+        
+        .cluster-icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .icon-high {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+        
+        .icon-mid {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+        }
+        
+        .icon-low {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+        
+        .cluster-title {
+            flex: 1;
+        }
+        
+        .cluster-title h3 {
+            font-size: 1.8rem;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cluster-stats {
+            color: #718096;
+            font-size: 1rem;
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .cluster-stats span {
+            font-weight: 600;
+        }
+        
+        .cluster-percentage {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-size: 3rem;
+            font-weight: 700;
+            opacity: 0.15;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .section {
+            margin-bottom: 2rem;
+        }
+        
+        .section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .section-title i {
+            color: #667eea;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .tag {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tag-success {
+            background: #d4f4dd;
+            color: #38a169;
+        }
+        
+        .tag-warning {
+            background: #feebc8;
+            color: #dd6b20;
+        }
+        
+        .recommendation-text {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .recommendation-text p {
+            color: #2d3748;
+            line-height: 1.8;
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .recommendation-text strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="dashboard.html" class="navbar-brand">
+            <img src="../assets/logo.svg" alt="SupplierIQ Logo" style="width: 40px; height: 40px;">
+            <div class="brand-text">
+                <h1>SupplierIQ</h1>
+                <p>Performance Analytics</p>
+            </div>
+        </a>
+        
+        <ul class="navbar-menu">
+            <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="transactions.html"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+            <li><a href="upload.html"><i class="fas fa-upload"></i> Upload</a></li>
+            <li><a href="recommendations.html" class="active"><i class="fas fa-lightbulb"></i> Recommendations</a></li>
+        </ul>
+        
+        <div class="navbar-user">
+            <div class="user-profile">
+                <div class="user-avatar">AB</div>
+                <div class="user-info">
+                    <span class="user-name">User</span>
+                    <span class="user-role">Admin</span>
+                </div>
+            </div>
+            <button class="btn btn-logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-text">
+                <h2>Strategic Recommendations</h2>
+                <p>AI-driven insights and strategic recommendations for each performance cluster</p>
+            </div>
+        </div>
+        
+        <div id="errorContainer"></div>
+        
+        <!-- Recommendations Grid -->
+        <div class="recommendations-grid" id="recommendationsGrid">
+            <div class="loading"><div class="spinner"></div></div>
+        </div>
+    </main>
+    
+    <script src="../js/api.js"></script>
+    <script src="../js/auth-check.js"></script>
+    <script>
+        // Load recommendations
+        async function loadRecommendations() {
+            try {
+                const response = await RecommendationsAPI.getAll();
+                // Extract recommendations array from API response
+                const recommendations = response.recommendations || response;
+                renderRecommendations(recommendations);
+            } catch (error) {
+                showError('Failed to load recommendations: ' + error.message);
+                document.getElementById('recommendationsGrid').innerHTML = '<p style="text-align: center; color: var(--danger);">Failed to load recommendations</p>';
+            }
+        }
+        
+        // Render recommendations
+        function renderRecommendations(recommendations) {
+            const grid = document.getElementById('recommendationsGrid');
+            
+            if (!recommendations || recommendations.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: var(--text-light);">No recommendations available</p>';
+                return;
+            }
+            
+            // Sort by cluster_id to ensure High, Mid, Low order
+            const sorted = recommendations.sort((a, b) => a.cluster_id - b.cluster_id);
+            
+            grid.innerHTML = sorted.map(rec => {
+                const tierClass = getTierClass(rec.cluster_id);
+                const iconClass = getIconClass(rec.cluster_id);
+                
+                return `
+                    <div class="recommendation-card">
+                        <div class="card-header card-header-${tierClass}">
+                            <div class="cluster-icon-large icon-${tierClass}">
+                                <i class="${getIcon(rec.cluster_id)}"></i>
+                            </div>
+                            <div class="cluster-title">
+                                <h3>${rec.profile || `Cluster ${rec.cluster_id}`}</h3>
+                                <div class="cluster-stats">
+                                    <span>${rec.size || 0} suppliers</span>
+                                    <span>${formatPercentage(rec.percentage || 0)} of total</span>
+                                </div>
+                            </div>
+                            <div class="cluster-percentage">${formatPercentage(rec.percentage || 0, 0)}</div>
+                        </div>
+                        
+                        <div class="card-body">
+                            ${rec.key_strengths && rec.key_strengths.length > 0 ? `
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Key Strengths</span>
+                                </div>
+                                <div class="tags">
+                                    ${rec.key_strengths.map(strength => `
+                                        <div class="tag tag-success">
+                                            <i class="fas fa-star"></i>
+                                            <span>${strength}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            ${rec.improvement_areas && rec.improvement_areas.length > 0 ? `
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <span>Areas for Improvement</span>
+                                </div>
+                                <div class="tags">
+                                    ${rec.improvement_areas.map(area => `
+                                        <div class="tag tag-warning">
+                                            <i class="fas fa-arrow-up"></i>
+                                            <span>${area}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            ${rec.recommended_strategy ? `
+                            <div class="section">
+                                <div class="section-title">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <span>Strategic Recommendation</span>
+                                </div>
+                                <div class="recommendation-text">
+                                    <p><strong>Strategy:</strong> ${rec.recommended_strategy}</p>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Get tier class based on cluster_id
+        function getTierClass(clusterId) {
+            // Cluster 0 = High, 1 = Mid, 2 = Low (based on ensemble clustering)
+            if (clusterId === 0) return 'high';
+            if (clusterId === 1) return 'mid';
+            return 'low';
+        }
+        
+        // Get icon class
+        function getIconClass(clusterId) {
+            if (clusterId === 0) return 'icon-high';
+            if (clusterId === 1) return 'icon-mid';
+            return 'icon-low';
+        }
+        
+        // Get icon
+        function getIcon(clusterId) {
+            if (clusterId === 0) return 'fas fa-trophy';
+            if (clusterId === 1) return 'fas fa-chart-line';
+            return 'fas fa-exclamation-triangle';
+        }
+        
+        // Load recommendations on page load
+        loadRecommendations();
+    </script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SupplierIQ</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/common.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="dashboard.html" class="navbar-brand">
+            <img src="../assets/logo.svg" alt="SupplierIQ Logo" style="width: 40px; height: 40px;">
+            <div class="brand-text">
+                <h1>SupplierIQ</h1>
+                <p>Performance Analytics</p>
+            </div>
+        </a>
+        
+        <ul class="navbar-menu">
+            <li><a href="dashboard.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="transactions.html"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+            <li><a href="upload.html"><i class="fas fa-upload"></i> Upload</a></li>
+            <li><a href="recommendations.html"><i class="fas fa-lightbulb"></i> Recommendations</a></li>
+        </ul>
+        
+        <div class="navbar-user">
+            <div class="user-profile">
+                <div class="user-avatar">AB</div>
+                <div class="user-info">
+                    <span class="user-name">User</span>
+                    <span class="user-role">Admin</span>
+                </div>
+            </div>
+            <button class="btn btn-logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-text">
+                <h2>Supplier Performance Dashboard</h2>
+                <p>Monitor and analyze supplier performance using ensemble clustering</p>
+            </div>
+        </div>
+        
+        <div id="errorContainer"></div>
+        <div id="successContainer"></div>
+        
+        <!-- Metrics Cards -->
+        <div class="metrics-grid" id="metricsGrid">
+            <div class="loading"><div class="spinner"></div></div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-bar"></i> Cluster Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-pie"></i> Performance Breakdown</h3>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Overview Section -->
+        <div class="charts-section">
+            <div class="chart-card" style="grid-column: 1 / -1;">
+                <h3><i class="fas fa-tachometer-alt"></i> Performance Overview by Cluster</h3>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Companies Table -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3><i class="fas fa-building"></i> All Companies</h3>
+            </div>
+            
+            <div class="table-controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search companies...">
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Supplier ID</th>
+                            <th>Company Name</th>
+                            <th>Overall Score</th>
+                            <th>Quality Score</th>
+                            <th>Delivery Reliability</th>
+                            <th>Cost Efficiency</th>
+                            <th>Cluster</th>
+                        </tr>
+                    </thead>
+                    <tbody id="companiesTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2rem;">
+                                <div class="loading"><div class="spinner"></div></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    
+    <script src="../js/api.js"></script>
+    <script src="../js/auth-check.js"></script>
+    <script>
+        let allCompanies = [];
+        let barChart = null;
+        let pieChart = null;
+        let performanceChart = null;
+        
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Fetch companies data
+                const response = await CompaniesAPI.getAll();
+                
+                // Extract companies array from response
+                const companies = response.companies || response;
+                allCompanies = companies;
+                
+                // Calculate stats
+                const stats = calculateStats(companies);
+                
+                // Render metrics
+                renderMetrics(stats);
+                
+                // Render charts
+                renderCharts(stats);
+                
+                // Render performance overview
+                renderPerformanceChart(companies);
+                
+                // Render table
+                renderTable(companies);
+                
+            } catch (error) {
+                showError('Failed to load dashboard data: ' + error.message);
+                document.getElementById('metricsGrid').innerHTML = '<p style="text-align: center; color: var(--danger);">Failed to load data</p>';
+            }
+        }
+        
+        // Calculate statistics
+        function calculateStats(companies) {
+            const total = companies.length;
+            const high = companies.filter(c => c.performance_tier === 'High Performance').length;
+            const mid = companies.filter(c => c.performance_tier === 'Mid Performance').length;
+            const low = companies.filter(c => c.performance_tier === 'Low Performance').length;
+            
+            // Calculate overall averages across all companies
+            const avgOverall = total > 0 ? companies.reduce((sum, c) => sum + (c.performance?.overall_score || 0), 0) / total : 0;
+            const avgQuality = total > 0 ? companies.reduce((sum, c) => sum + (c.performance?.quality_score || 0), 0) / total : 0;
+            const avgDelivery = total > 0 ? companies.reduce((sum, c) => sum + (c.performance?.delivery_reliability || 0), 0) / total : 0;
+            const avgCost = total > 0 ? companies.reduce((sum, c) => sum + (c.performance?.cost_efficiency || 0), 0) / total : 0;
+            
+            return { total, high, mid, low, avgOverall, avgQuality, avgDelivery, avgCost };
+        }
+        
+        // Render metrics cards
+        function renderMetrics(stats) {
+            const metricsGrid = document.getElementById('metricsGrid');
+            metricsGrid.innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-icon metric-icon-blue">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="metric-details">
+                        <div class="metric-value">${stats.total}</div>
+                        <div class="metric-label">Total Companies</div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon metric-icon-purple">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="metric-details">
+                        <div class="metric-value">${stats.avgOverall.toFixed(1)}%</div>
+                        <div class="metric-label">Overall Score</div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon metric-icon-green">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="metric-details">
+                        <div class="metric-value">${stats.avgQuality.toFixed(1)}%</div>
+                        <div class="metric-label">Quality Score</div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon metric-icon-orange">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="metric-details">
+                        <div class="metric-value">${stats.avgDelivery.toFixed(1)}%</div>
+                        <div class="metric-label">Delivery Reliability</div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon metric-icon-red">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="metric-details">
+                        <div class="metric-value">${stats.avgCost.toFixed(1)}%</div>
+                        <div class="metric-label">Cost Efficiency</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Render charts
+        function renderCharts(stats) {
+            // Bar Chart
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            if (barChart) barChart.destroy();
+            
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['High', 'Mid', 'Low'],
+                    datasets: [{
+                        label: 'Number of Companies',
+                        data: [stats.high, stats.mid, stats.low],
+                        backgroundColor: [
+                            'rgba(72, 187, 120, 0.8)',
+                            'rgba(237, 137, 54, 0.8)',
+                            'rgba(245, 101, 101, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(72, 187, 120, 1)',
+                            'rgba(237, 137, 54, 1)',
+                            'rgba(245, 101, 101, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Pie Chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            if (pieChart) pieChart.destroy();
+            
+            pieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['High Performers', 'Mid Performers', 'Low Performers'],
+                    datasets: [{
+                        data: [stats.high, stats.mid, stats.low],
+                        backgroundColor: [
+                            'rgba(72, 187, 120, 0.8)',
+                            'rgba(237, 137, 54, 0.8)',
+                            'rgba(245, 101, 101, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(72, 187, 120, 1)',
+                            'rgba(237, 137, 54, 1)',
+                            'rgba(245, 101, 101, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render performance overview chart
+        function renderPerformanceChart(companies) {
+            // Calculate average scores by cluster
+            const highPerformers = companies.filter(c => c.performance_tier === 'High Performance');
+            const midPerformers = companies.filter(c => c.performance_tier === 'Mid Performance');
+            const lowPerformers = companies.filter(c => c.performance_tier === 'Low Performance');
+            
+            const calculateAverage = (arr, field) => {
+                if (arr.length === 0) return 0;
+                const sum = arr.reduce((acc, c) => acc + (c.performance[field] || 0), 0);
+                return (sum / arr.length);
+            };
+            
+            const highScores = {
+                overall: calculateAverage(highPerformers, 'overall_score'),
+                quality: calculateAverage(highPerformers, 'quality_score'),
+                delivery: calculateAverage(highPerformers, 'delivery_reliability'),
+                cost: calculateAverage(highPerformers, 'cost_efficiency')
+            };
+            
+            const midScores = {
+                overall: calculateAverage(midPerformers, 'overall_score'),
+                quality: calculateAverage(midPerformers, 'quality_score'),
+                delivery: calculateAverage(midPerformers, 'delivery_reliability'),
+                cost: calculateAverage(midPerformers, 'cost_efficiency')
+            };
+            
+            const lowScores = {
+                overall: calculateAverage(lowPerformers, 'overall_score'),
+                quality: calculateAverage(lowPerformers, 'quality_score'),
+                delivery: calculateAverage(lowPerformers, 'delivery_reliability'),
+                cost: calculateAverage(lowPerformers, 'cost_efficiency')
+            };
+            
+            const perfCtx = document.getElementById('performanceChart').getContext('2d');
+            if (performanceChart) performanceChart.destroy();
+            
+            performanceChart = new Chart(perfCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Overall Score', 'Quality Score', 'Delivery Reliability', 'Cost Efficiency'],
+                    datasets: [
+                        {
+                            label: 'High-Tier',
+                            data: [highScores.overall, highScores.quality, highScores.delivery, highScores.cost],
+                            backgroundColor: 'rgba(72, 187, 120, 0.8)',
+                            borderColor: 'rgba(72, 187, 120, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Mid-Tier',
+                            data: [midScores.overall, midScores.quality, midScores.delivery, midScores.cost],
+                            backgroundColor: 'rgba(237, 137, 54, 0.8)',
+                            borderColor: 'rgba(237, 137, 54, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Low-Tier',
+                            data: [lowScores.overall, lowScores.quality, lowScores.delivery, lowScores.cost],
+                            backgroundColor: 'rgba(245, 101, 101, 0.8)',
+                            borderColor: 'rgba(245, 101, 101, 1)',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Score (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Performance Metrics'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render companies table
+        function renderTable(companies) {
+            const tbody = document.getElementById('companiesTableBody');
+            
+            if (companies.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No companies found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = companies.map(company => `
+                <tr>
+                    <td>${company.supplier_id}</td>
+                    <td><strong>${company.company_name}</strong></td>
+                    <td>${formatPercentage(company.performance.overall_score)}</td>
+                    <td>${formatPercentage(company.performance.quality_score)}</td>
+                    <td>${formatPercentage(company.performance.delivery_reliability)}</td>
+                    <td>${formatPercentage(company.performance.cost_efficiency)}</td>
+                    <td><span class="badge ${getClusterBadgeClass(company.performance_tier)}">${getClusterName(company.performance_tier)}</span></td>
+                </tr>
+            `).join('');
+        }
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allCompanies.filter(company => 
+                company.supplier_id.toLowerCase().includes(searchTerm) ||
+                company.company_name.toLowerCase().includes(searchTerm)
+            );
+            renderTable(filtered);
+        });
+        
+        // Load dashboard on page load
+        loadDashboard();
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+supplier_id,company_name,overall_score,quality_score,delivery_reliability,cost_efficiency,customer_satisfaction,defect_rate
+SUP_001,Premium Parts Corp,97.3,96.5,98.2,94.8,95.0,0.9
+SUP_002,ABC Manufacturing,93.1,92.0,95.5,88.2,90.0,1.8
+SUP_003,Quality Components,91.0,89.5,91.7,89.5,88.0,2.3
+SUP_004,XYZ Industries,85.4,85.0,87.3,92.1,88.0,3.2
+SUP_005,Delta Supplies,78.2,75.5,80.0,82.5,76.0,4.5
+SUP_006,Omega Corp,92.5,91.0,94.2,90.8,89.5,1.5
+SUP_007,Beta Manufacturing,88.7,87.2,90.5,85.3,87.0,2.8
+SUP_008,Gamma Industries,95.8,94.5,97.0,93.2,92.0,1.2
+SUP_009,Epsilon Parts,82.4,80.1,85.0,84.7,81.0,3.9

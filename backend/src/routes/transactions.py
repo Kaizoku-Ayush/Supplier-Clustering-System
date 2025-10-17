@@ -1,11 +1,10 @@
 """
-Transactions API Routes
-=======================
-
-Endpoints for transaction-level data (2,994 transactions with ensemble clustering)
+Transactions Routes
+===================
+Handles transaction-level data with pagination.
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request, jsonify
 import sys
 import os
 
@@ -13,149 +12,242 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'models'))
 from database import get_transactions
 
-# Create blueprint
 transactions_bp = Blueprint('transactions', __name__)
 
 
 @transactions_bp.route('/transactions', methods=['GET'])
 def get_all_transactions():
     """
-    Get all transactions with pagination
+    Get all transactions with pagination.
     
     Query Parameters:
-    - supplier_id: Filter by company (e.g., "SUP_001")
-    - cluster_id: Filter by cluster (e.g., 0, 1, 2)
-    - performance_tier: Filter by tier (e.g., "High Performance")
-    - limit: Number of results per page (default: 100, max: 500)
-    - page: Page number (default: 1)
-    - sort_by: Sort field (default: "transaction_date")
-    - order: Sort order "asc" or "desc" (default: "desc")
+        - page (optional): Page number (default: 1)
+        - limit (optional): Items per page (default: 25)
+        - cluster (optional): Filter by cluster_id
+        - tier (optional): Filter by performance_tier
+        - supplier_id (optional): Filter by supplier_id
+        - search (optional): Search by supplier_id or company_name
     
-    Example: /api/transactions?supplier_id=SUP_001&limit=50&page=1
+    Returns:
+        {
+            "success": true,
+            "page": 1,
+            "limit": 25,
+            "total": 2994,
+            "total_pages": 120,
+            "transactions": [...]
+        }
     """
     try:
-        collection = get_transactions()
+        transactions = get_transactions()
+        
+        # Get pagination parameters
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 25))
+        skip = (page - 1) * limit
         
         # Build query filter
         query = {}
         
+        # Filter by cluster
+        cluster_param = request.args.get('cluster')
+        if cluster_param:
+            query['cluster_id'] = int(cluster_param)
+        
+        # Filter by tier
+        tier_param = request.args.get('tier')
+        if tier_param:
+            query['performance_tier'] = tier_param
+        
         # Filter by supplier_id
-        supplier_id = request.args.get('supplier_id')
-        if supplier_id:
-            query['supplier.supplier_id'] = supplier_id
+        supplier_param = request.args.get('supplier_id')
+        if supplier_param:
+            query['supplier.supplier_id'] = supplier_param
         
-        # Filter by cluster_id
-        cluster_id = request.args.get('cluster_id')
-        if cluster_id:
-            query['cluster_id'] = int(cluster_id)
-        
-        # Filter by performance_tier
-        performance_tier = request.args.get('performance_tier')
-        if performance_tier:
-            query['performance_tier'] = performance_tier
-        
-        # Pagination
-        limit = min(int(request.args.get('limit', 100)), 500)  # Max 500
-        page = int(request.args.get('page', 1))
-        skip = (page - 1) * limit
-        
-        # Sorting
-        sort_by = request.args.get('sort_by', 'transaction_date')
-        order = request.args.get('order', 'desc')
-        sort_direction = -1 if order == 'desc' else 1
+        # Search by supplier_id or company_name
+        search_param = request.args.get('search')
+        if search_param:
+            query['$or'] = [
+                {'supplier.supplier_id': {'$regex': search_param, '$options': 'i'}},
+                {'supplier.company_name': {'$regex': search_param, '$options': 'i'}}
+            ]
         
         # Get total count for pagination
-        total_count = collection.count_documents(query)
-        total_pages = (total_count + limit - 1) // limit  # Ceiling division
+        total = transactions.count_documents(query)
+        total_pages = (total + limit - 1) // limit  # Ceiling division
         
-        # Query database
-        transactions = list(
-            collection.find(query, {'_id': 0})
-            .sort(sort_by, sort_direction)
+        # Execute query with pagination
+        results = list(
+            transactions.find(query)
+            .sort('transaction_date', -1)  # Sort by date descending
             .skip(skip)
             .limit(limit)
         )
         
+        # Convert ObjectId to string
+        for transaction in results:
+            transaction['_id'] = str(transaction['_id'])
+        
         return jsonify({
-            'success': True,
-            'pagination': {
-                'page': page,
-                'limit': limit,
-                'total_count': total_count,
-                'total_pages': total_pages
-            },
-            'data': transactions
+            "success": True,
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+            "transactions": results
         }), 200
         
-    except Exception as e:
+    except ValueError:
         return jsonify({
-            'success': False,
-            'error': str(e)
+            "success": False,
+            "message": "Invalid pagination parameters"
+        }), 400
+    except Exception as e:
+        print(f"Error fetching transactions: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"Failed to fetch transactions: {str(e)}"
         }), 500
 
 
 @transactions_bp.route('/transactions/stats', methods=['GET'])
 def get_transactions_stats():
     """
-    Get statistics about transactions
+    Get statistics about transactions.
     
-    Query Parameters:
-    - supplier_id: Filter by company (optional)
-    
-    Example: /api/transactions/stats?supplier_id=SUP_001
+    Returns:
+        {
+            "success": true,
+            "stats": {
+                "total": 2994,
+                "by_tier": {
+                    "High Performance": 1200,
+                    "Mid Performance": 1000,
+                    "Low Performance": 794
+                },
+                "by_cluster": {
+                    "0": 1200,
+                    "1": 1000,
+                    "2": 794
+                },
+                "average_scores": {...}
+            }
+        }
     """
     try:
-        collection = get_transactions()
+        transactions = get_transactions()
         
-        # Build query filter
-        query = {}
-        supplier_id = request.args.get('supplier_id')
-        if supplier_id:
-            query['supplier.supplier_id'] = supplier_id
+        # Total count
+        total = transactions.count_documents({})
         
-        # Get transactions
-        transactions = list(collection.find(query, {'_id': 0}))
+        # Count by tier
+        pipeline_tier = [
+            {"$group": {
+                "_id": "$performance_tier",
+                "count": {"$sum": 1}
+            }}
+        ]
+        tier_results = list(transactions.aggregate(pipeline_tier))
+        by_tier = {item['_id']: item['count'] for item in tier_results}
         
-        if not transactions:
-            return jsonify({
-                'success': True,
-                'data': {
-                    'total_transactions': 0,
-                    'message': 'No transactions found'
-                }
-            }), 200
+        # Count by cluster
+        pipeline_cluster = [
+            {"$group": {
+                "_id": "$cluster_id",
+                "count": {"$sum": 1}
+            }}
+        ]
+        cluster_results = list(transactions.aggregate(pipeline_cluster))
+        by_cluster = {str(item['_id']): item['count'] for item in cluster_results}
         
-        # Calculate statistics
-        tier_distribution = {}
-        cluster_distribution = {}
-        total_score = 0
-        
-        for trans in transactions:
-            # Tier distribution
-            tier = trans.get('performance_tier', 'Unknown')
-            tier_distribution[tier] = tier_distribution.get(tier, 0) + 1
-            
-            # Cluster distribution
-            cluster = trans.get('cluster_id', -1)
-            cluster_distribution[cluster] = cluster_distribution.get(cluster, 0) + 1
-            
-            # Total score
-            total_score += trans.get('metrics', {}).get('overall_score', 0)
-        
-        avg_score = total_score / len(transactions)
+        # Average scores
+        pipeline_avg = [
+            {"$group": {
+                "_id": None,
+                "overall_score": {"$avg": "$metrics.overall_score"},
+                "quality_score": {"$avg": "$metrics.quality_score"},
+                "delivery_reliability": {"$avg": "$metrics.delivery_reliability"},
+                "cost_efficiency": {"$avg": "$metrics.cost_efficiency"},
+                "customer_satisfaction": {"$avg": "$metrics.customer_satisfaction"},
+                "defect_rate": {"$avg": "$metrics.defect_rate"}
+            }}
+        ]
+        avg_results = list(transactions.aggregate(pipeline_avg))
+        average_scores = avg_results[0] if avg_results else {}
+        if average_scores:
+            del average_scores['_id']
         
         return jsonify({
-            'success': True,
-            'data': {
-                'total_transactions': len(transactions),
-                'tier_distribution': tier_distribution,
-                'cluster_distribution': cluster_distribution,
-                'average_overall_score': round(avg_score, 2)
+            "success": True,
+            "stats": {
+                "total": total,
+                "by_tier": by_tier,
+                "by_cluster": by_cluster,
+                "average_scores": average_scores
             }
         }), 200
         
     except Exception as e:
+        print(f"Error fetching transaction stats: {e}")
         return jsonify({
-            'success': False,
-            'error': str(e)
+            "success": False,
+            "message": f"Failed to fetch stats: {str(e)}"
+        }), 500
+
+
+@transactions_bp.route('/transactions/supplier/<supplier_id>', methods=['GET'])
+def get_transactions_by_supplier(supplier_id):
+    """
+    Get all transactions for a specific supplier.
+    
+    Returns:
+        {
+            "success": true,
+            "supplier_id": "SUP_001",
+            "count": 120,
+            "transactions": [...]
+        }
+    """
+    try:
+        transactions = get_transactions()
+        
+        # Get pagination parameters
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 25))
+        skip = (page - 1) * limit
+        
+        # Query by supplier_id
+        query = {"supplier.supplier_id": supplier_id}
+        
+        # Get total count
+        total = transactions.count_documents(query)
+        total_pages = (total + limit - 1) // limit
+        
+        # Execute query
+        results = list(
+            transactions.find(query)
+            .sort('transaction_date', -1)
+            .skip(skip)
+            .limit(limit)
+        )
+        
+        # Convert ObjectId to string
+        for transaction in results:
+            transaction['_id'] = str(transaction['_id'])
+        
+        return jsonify({
+            "success": True,
+            "supplier_id": supplier_id,
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+            "transactions": results
+        }), 200
+        
+    except Exception as e:
+        print(f"Error fetching supplier transactions: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"Failed to fetch transactions: {str(e)}"
         }), 500

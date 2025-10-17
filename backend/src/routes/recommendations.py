@@ -1,11 +1,10 @@
 """
-Recommendations API Routes
-==========================
-
-Endpoints for cluster recommendations (3 ensemble clusters)
+Recommendations Routes
+======================
+Handles cluster-level strategic recommendations.
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request, jsonify
 import sys
 import os
 
@@ -13,72 +12,100 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'models'))
 from database import get_recommendations
 
-# Create blueprint
 recommendations_bp = Blueprint('recommendations', __name__)
 
 
 @recommendations_bp.route('/recommendations', methods=['GET'])
 def get_all_recommendations():
     """
-    Get all recommendations for ensemble clusters
+    Get all cluster recommendations.
     
     Query Parameters:
-    - cluster_id: Filter by cluster (e.g., 0, 1, 2)
+        - cluster (optional): Filter by cluster_id
     
-    Example: /api/recommendations?cluster_id=0
+    Returns:
+        {
+            "success": true,
+            "count": 3,
+            "recommendations": [
+                {
+                    "cluster_id": 0,
+                    "profile": "Premium Suppliers",
+                    "size": 130,
+                    "percentage": 4.3,
+                    "key_strengths": ["Quality Score", "Delivery Reliability"],
+                    "improvement_areas": ["Cost Efficiency"],
+                    "recommended_strategy": "Maintain partnership..."
+                },
+                ...
+            ]
+        }
     """
     try:
-        collection = get_recommendations()
+        recommendations = get_recommendations()
         
         # Build query filter
         query = {}
         
-        # Filter by cluster_id
-        cluster_id = request.args.get('cluster_id')
-        if cluster_id:
-            query['cluster_id'] = int(cluster_id)
+        # Filter by cluster
+        cluster_param = request.args.get('cluster')
+        if cluster_param:
+            query['cluster_id'] = int(cluster_param)
         
-        # Query database
-        recommendations = list(collection.find(query, {'_id': 0}))
+        # Execute query
+        results = list(recommendations.find(query).sort('cluster_id', 1))
+        
+        # Convert ObjectId to string
+        for rec in results:
+            rec['_id'] = str(rec['_id'])
         
         return jsonify({
-            'success': True,
-            'count': len(recommendations),
-            'data': recommendations
+            "success": True,
+            "count": len(results),
+            "recommendations": results
         }), 200
         
     except Exception as e:
+        print(f"Error fetching recommendations: {e}")
         return jsonify({
-            'success': False,
-            'error': str(e)
+            "success": False,
+            "message": f"Failed to fetch recommendations: {str(e)}"
         }), 500
 
 
 @recommendations_bp.route('/recommendations/<int:cluster_id>', methods=['GET'])
 def get_recommendation_by_cluster(cluster_id):
     """
-    Get recommendation for a specific cluster
+    Get recommendation for a specific cluster.
     
-    Example: /api/recommendations/0
+    Returns:
+        {
+            "success": true,
+            "recommendation": {...}
+        }
     """
     try:
-        collection = get_recommendations()
+        recommendations = get_recommendations()
         
-        recommendation = collection.find_one({'cluster_id': cluster_id}, {'_id': 0})
+        recommendation = recommendations.find_one({"cluster_id": cluster_id})
         
-        if recommendation:
+        if not recommendation:
             return jsonify({
-                'success': True,
-                'data': recommendation
-            }), 200
-        else:
-            return jsonify({
-                'success': False,
-                'error': f'Recommendation for cluster {cluster_id} not found'
+                "success": False,
+                "message": f"Recommendation for cluster {cluster_id} not found"
             }), 404
-            
-    except Exception as e:
+        
+        # Convert ObjectId to string
+        recommendation['_id'] = str(recommendation['_id'])
+        
         return jsonify({
-            'success': False,
-            'error': str(e)
+            "success": True,
+            "recommendation": recommendation
+        }), 200
+        
+    except Exception as e:
+        print(f"Error fetching recommendation: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"Failed to fetch recommendation: {str(e)}"
         }), 500
